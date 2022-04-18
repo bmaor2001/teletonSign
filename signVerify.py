@@ -2,9 +2,12 @@
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
+
+from OpenSSL import crypto        
+
 from datetime import datetime
 
-
+## Sign Algorithm
 def gen_signature(priv_key, document):
     '''Receives the HASH of the documentPDF and the private key,
     returns a binary file with the signature.
@@ -25,8 +28,11 @@ def gen_signature(priv_key, document):
         hashes.SHA256()
     )   
 
+    #Format: aaaammdd_hhmmss
+    date = str(datetime.now()).replace('-', '').replace(':', '').replace(' ', '_')[:-7]
+
     #write the binary signature file
-    f = open('signature' + str(datetime.now()), "wb")
+    f = open('nombreDoc_nomina_fecha' + date + '.sign', "wb")
     f.write(signature)
     f.close()
 
@@ -34,15 +40,21 @@ def gen_signature(priv_key, document):
     return f
 
 
-
-def verify(pub_key, document, sigfile):
-    '''Receives the public key (certificate), the
+## Verifying Algorithm
+def verify(cert, document, sigfile):
+    '''Receives the certificate with public key, the
     document and the signaturefile to see if said signatures
     corresponds to that document. And its hasn't been 
     altered or something else was signed. '''
 
+    #Get public_key from certificate
+    crtObj = crypto.load_certificate(crypto.FILETYPE_PEM, open(cert).read())
+    pub_key = crtObj.get_pubkey()
     pub_key = pub_key.to_cryptography_key()
-    
+
+    f = open(sigfile, 'rb')
+    sigfile = f.read()
+
     try: 
         pub_key.verify(
         sigfile,
@@ -52,7 +64,7 @@ def verify(pub_key, document, sigfile):
             salt_length=padding.PSS.MAX_LENGTH
         ),
         hashes.SHA256()
-    )
+        )
         print('Verification successful')
 
     except: 
