@@ -8,7 +8,7 @@ from OpenSSL import crypto
 from datetime import datetime
 
 ## Sign Algorithm
-def gen_signature(priv_key, document):
+def gen_signature(priv_key, document, nombreDoc, nomina,):
     '''Receives the HASH of the documentPDF and the private key,
     returns a binary file with the signature.
     This will be uploaded to the logs section FIRMAS'''
@@ -32,7 +32,7 @@ def gen_signature(priv_key, document):
     date = str(datetime.now()).replace('-', '').replace(':', '').replace(' ', '_')[:-7]
 
     #write the binary signature file
-    name = 'nombreDoc_nomina_fecha' + date + '.sign'
+    name = f"{nombreDoc}_{nomina}_{date}.sign"
     f = open(name, "wb")
     f.write(signature)
     f.close()
@@ -49,13 +49,17 @@ def verify(cert, document, sigfile, load = True):
     altered or something else was signed. '''
 
     #Get public_key from certificate
-    crtObj = crypto.load_certificate(crypto.FILETYPE_PEM, open(cert).read())
-    pub_key = crtObj.get_pubkey()
-    pub_key = pub_key.to_cryptography_key()
+    
     
     if load:
         f = open(sigfile, 'rb')
         sigfile = f.read()
+        crtObj = crypto.load_certificate(crypto.FILETYPE_PEM, open(cert).read())
+    else:
+        crtObj = crypto.load_certificate(crypto.FILETYPE_PEM, cert)
+        
+    pub_key = crtObj.get_pubkey()
+    pub_key = pub_key.to_cryptography_key()
 
     try: 
         pub_key.verify(
