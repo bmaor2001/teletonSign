@@ -32,16 +32,17 @@ def gen_signature(priv_key, document):
     date = str(datetime.now()).replace('-', '').replace(':', '').replace(' ', '_')[:-7]
 
     #write the binary signature file
-    f = open('nombreDoc_nomina_fecha' + date + '.sign', "wb")
+    name = 'nombreDoc_nomina_fecha' + date + '.sign'
+    f = open(name, "wb")
     f.write(signature)
     f.close()
 
     #Returns the sign binary file, will be uploaded to DB
-    return f
+    return name
 
 
 ## Verifying Algorithm
-def verify(cert, document, sigfile):
+def verify(cert, document, sigfile, load = True):
     '''Receives the certificate with public key, the
     document and the signaturefile to see if said signatures
     corresponds to that document. And its hasn't been 
@@ -51,9 +52,10 @@ def verify(cert, document, sigfile):
     crtObj = crypto.load_certificate(crypto.FILETYPE_PEM, open(cert).read())
     pub_key = crtObj.get_pubkey()
     pub_key = pub_key.to_cryptography_key()
-
-    f = open(sigfile, 'rb')
-    sigfile = f.read()
+    
+    if load:
+        f = open(sigfile, 'rb')
+        sigfile = f.read()
 
     try: 
         pub_key.verify(
