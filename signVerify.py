@@ -72,7 +72,9 @@ def verify(cert, document, sigfile, load = True):
         hashes.SHA256()
         )
         print('Verification successful')
+        return True
 
     except: 
         print('Verification failed')
+        return False
 
