@@ -2,13 +2,18 @@
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
-
 from OpenSSL import crypto        
-
 from datetime import datetime
 
 ## Sign Algorithm
 def gen_signature(priv_key, document, nombreDoc, nomina,):
+    """
+    :type priv_key: str (dirección del documento)
+    :type document: bytes (El hash pasarlo a str y eso a bytes)
+    :type nombreDoc: str (nombre del archivo a firmar, solo como referencia)
+    :type nomina: str (nomina de quien firma)
+    :rtype: str (nombre del archivo firmado)
+    """
     '''Receives the HASH of the documentPDF and the private key,
     returns a binary file with the signature.
     This will be uploaded to the logs section FIRMAS'''
@@ -43,6 +48,13 @@ def gen_signature(priv_key, document, nombreDoc, nomina,):
 
 ## Verifying Algorithm
 def verify(cert, document, sigfile, load = True):
+    """
+    :type cert: str (dirección del documento)
+    :type document: bytes (El hash pasarlo a str y eso a bytes)
+    :type sigfile: str (Dirección del archivo firmado)
+    :type load: bool (Saber si lo tiene que leer del disco [True] o se le pasará un archivo en bytes)
+    :rtype: str (nombre del archivo firmado)
+    """
     '''Receives the certificate with public key, the
     document and the signaturefile to see if said signatures
     corresponds to that document. And its hasn't been 
@@ -71,10 +83,8 @@ def verify(cert, document, sigfile, load = True):
         ),
         hashes.SHA256()
         )
-        print('Verification successful')
         return True
 
     except: 
-        print('Verification failed')
         return False
 

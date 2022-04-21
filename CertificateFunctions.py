@@ -10,6 +10,8 @@ import OpenSSL.crypto
 import sys
 import hashlib
 
+
+#Función para generar el certificado digital y la llave privada
 def cert_gen(
     emailAddress="emailAddress",
     commonName="commonName",
@@ -76,6 +78,11 @@ def check_associate_cert_with_private_key(cert, private_key):
         return False
     
 def Hash_document(file):
+    """
+    :type file: str (dirección del archivo)
+    :rtype: _hashlib.HASH
+    Utilice Hash_document(file).hexdigest() para obtener la representación del SHA en string.
+    """
     # BUF_SIZE is totally arbitrary, change for your app!
     BUF_SIZE = 65536  # lets read stuff in 64kb chunks!
 
@@ -97,6 +104,10 @@ def Hash_document(file):
 
 #Verificando si todavía es vigente
 def VerificarVigencia(Certificado_1):
+    """
+    :type Certificado_1: str (dirección del archivo)
+    :rtype: bool
+    """
     try:
         cert_obj = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, Certificado_1)
         #cert_obj = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, open(cert).read())
