@@ -42,10 +42,10 @@ def request_signature_to_options():
     options_window()
 
 ## FUNCIONES DE VENTANAS
-
-# VENTANA PRINCIPAL
+# ventana principal
 def main_window():
     
+    # funcion para validar log in
     def validateLogin(username, password):
         print("username entered :", username.get())
         print("password entered :", password.get())
@@ -64,12 +64,12 @@ def main_window():
     fondo = PhotoImage(file="login.png")
     fondo1 = Label(main, image=fondo).place(x=0, y=0, relwidth=1, relheight=1)
 
-    # Variables
+    # VARIABLES
     username = StringVar()
     password = StringVar()
     validateLogin = partial(validateLogin, username, password)
     
-    # Entradas
+    # ENTRADAS
     entrada_name = Entry(main, textvariable=username, width=37, relief="flat", bg=black_color, bd=20, fg=white_color, insertbackground=white_color)
     entrada_name.place(x=36,y=264)
     entrada_name.focus_set()
@@ -78,7 +78,7 @@ def main_window():
     entrada_pwd.place(x=36,y=375)
     entrada_pwd.focus_set()
     
-    # Botones
+    # BOTONES
     boton = Button(main, text="log in", cursor="hand2", bg=purple_color, fg=white_color, width=12, relief="flat",
                       font=("Poppins Light", 14, "bold"), padx=85, pady=10, command=validateLogin)
     boton.place(x=34, y=472)
@@ -86,7 +86,7 @@ def main_window():
     #Visualizar main
     main.mainloop()
 
-# VENTANA DE OPCIONES
+# ventana de opciones
 def options_window():
     global options
     options = Toplevel(main)
@@ -96,6 +96,7 @@ def options_window():
     fondo = PhotoImage(file="options.png")
     fondo1 = Label(options, image=fondo).place(x=0, y=0, relwidth=1, relheight=1)
     
+    # BOTONES
     #Boton de ventana Sign
     btn_Sign = Button(options, text="Sign", cursor="hand2", bg=purple_color, fg=white_color, width=12, relief="flat",
                       font=("Poppins Light", 14, "bold"), padx=85, pady=10, command=options_to_sign)
@@ -113,21 +114,22 @@ def options_window():
                     font=("Poppins Light", 18, "bold"), padx=4, pady=4, command=options_to_main)
     btn_exit.place(x=130, y=580)
     
+    # mainloop para visualizacion
     options.mainloop()
 
-# VENTANA PARA FIRMAR DOCUMENTOS
+# ventana para firma de documentos
 def sign_window():
-    
+    # funcion para seleccionar archivo a firmar
     def select_file():
         global nombrearch_to_sign
         nombrearch_to_sign=fd.askopenfilename(initialdir = "/",title = "Seleccione archivo",filetypes = (("pdf files","*.pdf"),("todos los archivos","*.*")))
         print(nombrearch_to_sign)
-    
+    # funcion para seleccionar clave privada
     def select_privateKey():
         global privateKey
         privateKey=fd.askopenfilename(initialdir = "/",title = "Seleccione archivo",filetypes = (("pdf files","*.pdf"),("todos los archivos","*.*")))
         print(privateKey)
-        
+    # funcion para firmar archivo
     def sign_file():
         print("File Signed " + "privateKey: " + privateKey + " name: " + nombrearch_to_sign)
         sign_to_options()
@@ -140,6 +142,7 @@ def sign_window():
     fondo = PhotoImage(file="sign.png")
     fondo1 = Label(sign, image=fondo).place(x=0, y=0, relwidth=1, relheight=1)
     
+    # BOTONES
     #Boton de Home
     btn_home = Button(sign, cursor="hand2", bg=yellow_color, width=1, relief="flat", padx=8, pady=1, activebackground=yellow_color, command=sign_to_options)
     btn_home.place(x=191, y=127)
@@ -157,25 +160,25 @@ def sign_window():
                     font=("Poppins Light", 14, "bold"), padx=85, pady=10, command=sign_file)
     btn_Sign.place(x=34, y=469)
     
+    # mainloop para visualizar
     sign.mainloop()
 
-# FUNCION PARA VERIFICAR DOCUMENTOS
+# funcion para verificar
 def verify_window():
-    
+    # funcion para seleccionar archivo a firmar
     def select_file():
         global nombrearch_to_verify
         nombrearch_to_verify=fd.askopenfilename(initialdir = "/",title = "Seleccione archivo",filetypes = (("pdf files","*.pdf"),("todos los archivos","*.*")))
         print(nombrearch_to_verify)
-        
+    # funcion para seleccionar clave publica
     def select_publicKey():
         global publicKey
         publicKey=fd.askopenfilename(initialdir = "/",title = "Seleccione archivo",filetypes = (("pdf files","*.pdf"),("todos los archivos","*.*")))
         print(publicKey)
-        
+    # funcion para verificar archivo
     def verify_file():
         print("File Verified " + "publicKey: " + publicKey + " name: " + nombrearch_to_verify)
         verify_to_options()
-    
     
     global verify
     verify = Toplevel(options)
@@ -185,6 +188,7 @@ def verify_window():
     fondo = PhotoImage(file="verify.png")
     fondo1 = Label(verify, image=fondo).place(x=0, y=0, relwidth=1, relheight=1)
     
+    # BOTONES
     #Boton de Home
     btn_home = Button(verify, cursor="hand2", bg=yellow_color, width=1, relief="flat", padx=8, pady=1, activebackground=yellow_color, command=verify_to_options)
     btn_home.place(x=191, y=127)
@@ -202,15 +206,17 @@ def verify_window():
                     font=("Poppins Light", 14, "bold"), padx=85, pady=10, command=verify_file)
     btn_Verify.place(x=34, y=469)
     
+    # mainloop para visualizar
     verify.mainloop()
 
-# FUNCION PARA SOLICITAR FIRMAR
+# funcion para solicitar firmas
 def request_signature_window():
+    # funcion para seleccionar archivo
     def select_file():
         global nombrearch
         nombrearch=fd.askopenfilename(initialdir = "/",title = "Seleccione archivo",filetypes = (("pdf files","*.pdf"),("todos los archivos","*.*")))
         print(nombrearch)
-    
+    # funcion para cargar informacion del archivo
     def nominas(tagNominas, typoDocument, description, tagsDocuments):
         print("Las nominas son: " + tagNominas.get() + ", el typo es: " + typoDocument.get() + ", su descripcion es: " + description.get() + " y sus tags son: " + tagsDocuments.get() + " y la direccion del archivo es: " + nombrearch)
         request_signature_to_options()
@@ -266,6 +272,7 @@ def request_signature_window():
                     font=("Poppins Light", 14, "bold"), padx=85, pady=10, command=nominas)
     btn_Request_Signature.place(x=34, y=703)
     
+    # mainloop para visualizar
     request_signature.mainloop()
     
 main_window()
