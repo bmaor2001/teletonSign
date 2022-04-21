@@ -3,21 +3,25 @@ import pymysql
 
 class DataBase:
     def __init__(self, user, password, db):
-        self.connection = pymysql.connect(
-            host = "localhost",
-            user = user,
-            password = password,
-            db = db
-        )
-        self.cursor = self.connection.cursor()
+        try:
+            self.connection = pymysql.connect(
+                host = "localhost",
+                user = user,
+                password = password,
+                db = db
+            )
+            self.cursor = self.connection.cursor()
+
+            print("Conexión exitosa")
+        except:
+            self.create(user, password, "teleton")
+            
     
-        print("Conexión exitosa")
-    
-    def insert_users(self, nomina, nombre, puesto, tags, certificado, estatus):
+    def insert_users(self, nomina, password, nombre, puesto, tags, certificado, estatus):
             certificado = open(certificado, "rb").read()
-            sql = """INSERT INTO users (`Nomina`, `Nombre`, `Puesto`, `Tags`, `Certificado`, `Estatus`) VALUES (%s,%s,%s,%s,%s,%s)"""
+            sql = """INSERT INTO users (`Nomina`,`Password`, `Nombre`, `Puesto`, `Tags`, `Certificado`, `Estatus`) VALUES (%s, %s,%s,%s,%s,%s,%s)"""
             try:
-                self.cursor.execute(sql, (nomina, nombre, puesto, tags, certificado, estatus))
+                self.cursor.execute(sql, (nomina,password, nombre, puesto, tags, certificado, estatus))
                 print(f"{nombre} ha sido añadido a la base de datos.")
             except Exception as e:
                 print(e)
@@ -66,29 +70,29 @@ class DataBase:
         self.cursor.execute(sql)
         print("Eliminación exitosa")
         
-    def create(self, password):
-                Users_table = "CREATE TABLE `users` (`Nomina` varchar(10) NOT NULL,`Nombre` varchar(100) NOT NULL,`Puesto` varchar(50) NOT NULL,`Tags` text NOT NULL,`Certificado` blob,`Estatus` varchar(20) NOT NULL, PRIMARY KEY (`Nomina`))"
+    def create(self, user, password, database):
+                Users_table = "CREATE TABLE `users` (`Nomina` varchar(10) NOT NULL,`Password` varchar(100) NOT NULL,`Nombre` varchar(100) NOT NULL,`Puesto` varchar(50) NOT NULL,`Tags` text NOT NULL,  `Certificado` blob,`Estatus` varchar(20) NOT NULL,PRIMARY KEY (`Nomina`))"
                 Documentos_table = "CREATE TABLE `documentos` (`Hash` varchar(80) NOT NULL,`Tipo` varchar(100) NOT NULL,`Nombre` varchar(100) NOT NULL,`Descripcion` text NOT NULL,`Tags` varchar(100) NOT NULL,`Estatus` varchar(10) NOT NULL,`TIME` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,PRIMARY KEY (`Hash`))"
                 Firmas_table = "CREATE TABLE `firmas` (`ID` int(11) NOT NULL AUTO_INCREMENT,`Hash` varchar(100) NOT NULL,`Doc_signed` blob,`Nomina` varchar(50) NOT NULL,`TIME` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (`ID`))"
                 connection = pymysql.connect(
                         host = "localhost",
-                        user = "root",
-                        password = "",
+                        user = user,
+                        password = password,
                         db = "sys"
                     )
                 cursor = connection.cursor()
-                cursor.execute("CREATE DATABASE teleton")
+                cursor.execute(f"CREATE DATABASE {database}")
                 cursor.close()
 
                 connection = pymysql.connect(
                             host = "localhost",
-                            user = "root",
-                            password = "",
-                            db = "teleton"
+                            user = user,
+                            password = password,
+                            db = database
                         )
                 cursor = connection.cursor()
                 cursor.execute(Firmas_table)
                 cursor.execute(Documentos_table)
                 cursor.execute(Users_table)
-                self.cursor = self.connection.cursor()
+                self.cursor = connection.cursor()
 

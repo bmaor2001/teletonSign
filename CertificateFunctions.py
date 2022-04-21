@@ -125,3 +125,16 @@ def VerificarVigencia(Certificado_1):
     else:
         print("Certificado no vigente, no puede firmar")
         return False
+
+def VerificarPassword(nomina, password, database):
+    """
+    :type nomina: str
+    :type password: str
+    :type database: DataBaseConection.DataBase
+    """
+    hsh = hashlib.sha256(bytes(password, encoding="utf-8")).hexdigest()
+    hsh_true = database.select(tabla = "users", 
+                    what = "password", 
+                    where = "Nomina", 
+                    value = nomina)[0][0]
+    return hsh == hsh_true
