@@ -1,8 +1,13 @@
 from tkinter import *
 from tkinter import filedialog as fd
 from functools import partial
+import signVerify
+import hashlib
+import DataBaseConection
+from CertificateFunctions import cert_gen, check_associate_cert_with_private_key, VerificarVigencia, Hash_document, VerificarPassword
 
 purple_color = "#651e6e"
+nomina = ""
 black_color = "#000000"
 white_color = "#FFFFFF"
 yellow_color = "#f5c604"
@@ -47,9 +52,16 @@ def main_window():
     
     # funcion para validar log in
     def validateLogin(username, password):
+        global nomina
+        database = DataBaseConection.DataBase(user = "root", password = "", db = "teleton")
         print("username entered :", username.get())
         print("password entered :", password.get())
-        main_to_options()
+        if VerificarPassword(username.get(), password.get(), database):
+            nomina = username.get()
+            print(nomina)
+            main_to_options()
+        else:
+            print("Contraseña no encontrada")
         '''if username.get() == nomima and password.get() == pwd:
             main_to_options()
             return
@@ -131,7 +143,39 @@ def sign_window():
         print(privateKey)
     # funcion para firmar archivo
     def sign_file():
-        print("File Signed " + "privateKey: " + privateKey + " name: " + nombrearch_to_sign)
+        database = DataBaseConection.DataBase(user = "root", password = "", db = "teleton")
+        file_1 = nombrearch_to_sign
+        print(nomina)
+        Certificado_1 = database.select(tabla = "users", 
+                        what = "Certificado", 
+                        where = "Nomina", 
+                        value = nomina)[0][0]
+
+        # Se carga la llave privada del usuario
+
+        private_key_1 = privateKey
+
+        #Se verifica la vigencia para saber si es posible firmar el documento
+
+        VerificarVigencia(Certificado_1)
+
+        #Se valida si la llave privada coincide con el certificado almacenado, es decir, que quien quiera firmar sea quien dice ser.
+
+        Match = check_associate_cert_with_private_key(Certificado_1, private_key_1)
+        print()
+
+        if Match:
+            # se generar el archivo de firma digital
+            file_name = signVerify.gen_signature(private_key_1, bytes(Hash_document(file_1).hexdigest(), 'utf-8'), file_1, nomina)
+            print(f"Archivo firmado en {file_name}")
+
+            print("\n Cargando la firma a la base de datos")
+            database.cargar_firma(Doc_signed = file_name,
+                             Hash = Hash_document(file_1).hexdigest(),
+                             Nomina = nomina)
+        else:
+            print("La llave privada no coincide con el certificado.\nNo puede firmar este documento.")
+
         sign_to_options()
     
     global sign
@@ -169,7 +213,6 @@ def verify_window():
     def select_file():
         global nombrearch_to_verify
         nombrearch_to_verify=fd.askopenfilename(initialdir = "/",title = "Seleccione archivo",filetypes = (("pdf files","*.pdf"),("todos los archivos","*.*")))
-        print(nombrearch_to_verify)
     # funcion para seleccionar clave publica
     def select_publicKey():
         global publicKey
@@ -178,6 +221,29 @@ def verify_window():
     # funcion para verificar archivo
     def verify_file():
         print("File Verified " + "publicKey: " + publicKey + " name: " + nombrearch_to_verify)
+        Certificado_1 = publicKey
+        file_1 = nombrearch_to_verify
+        database = DataBaseConection.DataBase(user = "root", password = "", db = "teleton")
+        # Se extraé de la base de datos el archivo firmado que coincida con el hash del documento y la nómina
+        f = database.select(tabla = "firmas", 
+                        what = "Doc_signed", 
+                        where = "Hash", 
+                        value = Hash_document(file_1).hexdigest(),
+                        where_2 = "Nomina",
+                        value_2 = nomina)[0][0]
+        
+        if f != None:
+    # Si el archvio existe, se valida la firma
+            open("temp.sign", "wb").write(f)
+
+            result = signVerify.verify(Certificado_1, bytes(Hash_document(file_1).hexdigest(), 'utf-8'), "temp.sign", load = True)
+            if result:
+                print(f"Verificación exitosa. \nEl archivo fue firmado correctamente por {nomina}")
+            else:
+                print(f"Verificación fallida. \nEl archivo no firmado por {nomina}")
+        else:
+            # Si el archivo aún no existe, tiene pendiente la firma
+            print(f"El archivo aún no cuenta con la firma de {nomina}")
         verify_to_options()
     
     global verify
@@ -218,7 +284,23 @@ def request_signature_window():
         print(nombrearch)
     # funcion para cargar informacion del archivo
     def nominas(tagNominas, typoDocument, description, tagsDocuments):
-        print("Las nominas son: " + tagNominas.get() + ", el typo es: " + typoDocument.get() + ", su descripcion es: " + description.get() + " y sus tags son: " + tagsDocuments.get() + " y la direccion del archivo es: " + nombrearch)
+        #print("Las nominas son: " + tagNominas.get() + ", el typo es: " + typoDocument.get() + ", su descripcion es: " + description.get() + " y sus tags son: " + tagsDocuments.get() + " y la direccion del archivo es: " + nombrearch)
+        
+        database = DataBaseConection.DataBase(user = "root", password = "", db = "teleton")
+        
+        database.insert_documentos(Hash = Hash_document(nombrearch).hexdigest(), 
+                           Tipo = typoDocument.get(), 
+                           Nombre = nombrearch, 
+                           Descripcion = description.get(),
+                           Tags = tagNominas.get(),
+                           Estatus = "Activo")
+        
+        print("Tag nominas: "+str(tagNominas))
+        for k in str(tagNominas.get()).split(";"):
+            print("k: "+k)
+            database.insert_firma(Hash = Hash_document(nombrearch).hexdigest(),
+                Nomina = k)
+        print("Ingreso exitoso")
         request_signature_to_options()
     
     global request_signature
