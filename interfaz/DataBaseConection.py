@@ -36,6 +36,7 @@ class DataBase:
                 print(e)
                 
     ## Changes in these two functions
+    '''
     def insert_firma(self, Hash, Nomina, Doc_signed): 
             Doc_signed = open(Doc_signed, "rb").read()
             sql = """ INSERT INTO firmas  (Hash, Nomina, Doc_signed) VALUES (%s,%s,%s)"""
@@ -48,7 +49,15 @@ class DataBase:
     def cargar_firma(self, Doc_signed, Hash, Nomina):
         Doc_signed = open(Doc_signed, "rb").read()
         sql = """ UPDATE firmas SET Doc_signed = %s WHERE (Hash, Nomina) = (%s, %s)"""
+        #sql = """ INSERT INTO firmas SET Doc_signed = %s WHERE (Hash, Nomina) = (%s, %s)"""
         self.cursor.execute(sql, (Doc_signed, Hash, Nomina))
+    '''
+    def insert_firma(self, Doc_signed, Hash, Nomina):
+        Doc_signed = open(Doc_signed, "rb").read()
+        #sql = """ UPDATE firmas SET Doc_signed = %s WHERE (Hash, Nomina) = (%s, %s)"""
+        sql = """ INSERT INTO firmas  (Doc_signed, Hash, Nomina) VALUES (%s,%s,%s)"""
+        self.cursor.execute(sql, (Doc_signed, Hash, Nomina))
+    ## End of changes
                 
     def select(self, tabla, what, where, value, where_2 = "", value_2 = ""):
         if what == "*":
