@@ -7,9 +7,12 @@ import os
 import DataBaseConection
 from CertificateFunctions import cert_gen, check_associate_cert_with_private_key, VerificarVigencia, Hash_document, VerificarPassword
 
-os.chdir('./interfaz')
+#os.chdir('./interfaz')
 
 purple_color = "#651e6e"
+user_ = "root"
+password_ = ""
+db_ = "teleton"
 nomina = ""
 black_color = "#000000"
 white_color = "#FFFFFF"
@@ -56,7 +59,7 @@ def main_window():
     # funcion para validar log in
     def validateLogin(username, password):
         global nomina
-        database = DataBaseConection.DataBase(user = "root", password = "root", db = "teleton")
+        database = DataBaseConection.DataBase(user = user_, password = password_, db = db_)
         print("username entered :", username.get())
         print("password entered :", password.get())
         if VerificarPassword(username.get(), password.get(), database):
@@ -146,7 +149,7 @@ def sign_window():
         print(privateKey)
     # funcion para firmar archivo
     def sign_file():
-        database = DataBaseConection.DataBase(user = "root", password = "root", db = "teleton")
+        database = DataBaseConection.DataBase(user = user_, password = password_, db = db_)
         file_1 = nombrearch_to_sign
         print(nomina)
         Certificado_1 = database.select(tabla = "users", 
@@ -183,7 +186,7 @@ def sign_window():
         documents and checks hash received is in the db.
         -- Nomina always in UPPERCASE.'''
 
-        database = DataBaseConection.DataBase(user = "root", password = "root", db = "teleton")
+        database = DataBaseConection.DataBase(user = user_, password = password_, db = db_)
         documento = Hash_document(nombrearch_to_sign).hexdigest()
 
         activeDocs = """ SELECT Tags FROM documentos WHERE (Estatus, Hash) = (%s, %s)"""
@@ -258,7 +261,7 @@ def verify_window():
         print("File Verified " + "publicKey: " + publicKey + " name: " + nombrearch_to_verify)
         Certificado_1 = publicKey
         file_1 = nombrearch_to_verify
-        database = DataBaseConection.DataBase(user = "root", password = "root", db = "teleton")
+        database = DataBaseConection.DataBase(user = user_, password = password_, db = db_)
         # Se extraé de la base de datos el archivo firmado que coincida con el hash del documento y la nómina
         f = database.select(tabla = "firmas", 
                         what = "Doc_signed", 
@@ -322,7 +325,7 @@ def request_signature_window():
     def nominas(tagNominas, typoDocument, description, tagsDocuments):
         #print("Las nominas son: " + tagNominas.get() + ", el typo es: " + typoDocument.get() + ", su descripcion es: " + description.get() + " y sus tags son: " + tagsDocuments.get() + " y la direccion del archivo es: " + nombrearch)
         
-        database = DataBaseConection.DataBase(user = "root", password = "root", db = "teleton")
+        database = DataBaseConection.DataBase(user = user_, password = password_, db = db_)
         
         database.insert_documentos(Hash = Hash_document(nombrearch).hexdigest(), 
                            Tipo = typoDocument.get(), 
@@ -331,12 +334,14 @@ def request_signature_window():
                            Tags = tagNominas.get(),
                            Estatus = "Activo")
         
+        """
         print("Tag nominas: "+str(tagNominas))
         for k in str(tagNominas.get()).split(";"):
             print("k: "+k)
             database.insert_firma(Hash = Hash_document(nombrearch).hexdigest(),
                 Nomina = k)
         print("Ingreso exitoso")
+        """
         request_signature_to_options()
     
     global request_signature
