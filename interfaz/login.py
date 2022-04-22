@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter import filedialog as fd
+from tkinter import messagebox as MessageBox
 from functools import partial
 import signVerify
 import hashlib
@@ -68,6 +69,7 @@ def main_window():
             main_to_options()
         else:
             print("Contraseña no encontrada")
+            MessageBox.showerror("Error", "La contraseña no coincide con el usuario")
         '''if username.get() == nomima and password.get() == pwd:
             main_to_options()
             return
@@ -161,8 +163,11 @@ def sign_window():
         private_key_1 = privateKey
 
         #Se verifica la vigencia para saber si es posible firmar el documento
-        VerificarVigencia(Certificado_1)
-
+        vg = VerificarVigencia(Certificado_1)
+        if not vg:
+            MessageBox.showerror("Error", "El certificado no es vigente.\nNo puede firmar")
+            return
+        
         #Se valida si la llave privada coincide con el certificado almacenado, es decir, que quien quiera firmar sea quien dice ser.
         Match = check_associate_cert_with_private_key(Certificado_1, private_key_1)
         print()
@@ -173,11 +178,14 @@ def sign_window():
             print(f"Archivo firmado en {file_name}")
 
             print("\n Cargando la firma a la base de datos")
+            
             database.insert_firma(Doc_signed = file_name,
                              Hash = Hash_document(file_1).hexdigest(),
                              Nomina = nomina)
+            MessageBox.showinfo("Éxito", f"Archivo firmado en {file_name}")
         else:
             print("La llave privada no coincide con el certificado.\nNo puede firmar este documento.")
+            MessageBox.showerror("Error", "La llave privada no coincide con el certificado.\nNo puede firmar este documento.")
 
         sign_to_options()
 
@@ -198,8 +206,12 @@ def sign_window():
         activeDocs = database.cursor.execute(activeDocs, ('Activo', documento))
         activeDocs = database.cursor.fetchall()
         len(activeDocs)
+        print(activeDocs[0][0].split(';'))
+        print(nomina)
+        print(nomina in activeDocs[0][0].split(';'))
         if len(activeDocs) == 0:
             print('El documento no se encuentra en la base de datos o no está activo.')
+            MessageBox.showerror("Error", 'El documento no se encuentra en la base de datos o no está activo.')
             #return False
         else:
             if len(activeDocs) != 1:
@@ -212,6 +224,7 @@ def sign_window():
                     sign_file()
                     
                 else: 
+                    MessageBox.showerror("Error", 'No tiene autorización de firmar este documento.')
                     print('No tiene autorización de firmar este documento.')
                     #return False
 
@@ -270,19 +283,21 @@ def verify_window():
                         where_2 = "Nomina",
                         value_2 = nomina)#[0][0]
         print(len(f))
+        print(f)
         if len(f) != 1:
             # Si el archivo aún no existe, tiene pendiente la firma
+            MessageBox.showerror("Error", f"El archivo aún no cuenta con la firma de {nomina}")
             print(f"El archivo aún no cuenta con la firma de {nomina}")
 
         else:
             # Si el archvio existe, se valida la firma
-            open("temp.sign", "wb").write(f)
+            open("temp.sign", "wb").write(f[0][0])
 
             result = signVerify.verify(Certificado_1, bytes(Hash_document(file_1).hexdigest(), 'utf-8'), "temp.sign", load = True)
             if result:
-                print(f"Verificación exitosa. \nEl archivo fue firmado correctamente por {nomina}")
+                MessageBox.showinfo("Verificación exitosa.", f"El archivo fue firmado correctamente por {nomina}")
             else:
-                print(f"Verificación fallida. \nEl archivo no firmado por {nomina}")
+                MessageBox.showerror("Verificación errónea.", f"Verificación fallida. \nEl archivo no fue firmado por {nomina}")
         verify_to_options()
     
     global verify
@@ -334,14 +349,7 @@ def request_signature_window():
                            Tags = tagNominas.get(),
                            Estatus = "Activo")
         
-        """
-        print("Tag nominas: "+str(tagNominas))
-        for k in str(tagNominas.get()).split(";"):
-            print("k: "+k)
-            database.insert_firma(Hash = Hash_document(nombrearch).hexdigest(),
-                Nomina = k)
-        print("Ingreso exitoso")
-        """
+        MessageBox.showinfo("Éxito", f"El archivo ha sido cargado para ser firmado por {tagNominas.get()}")
         request_signature_to_options()
     
     global request_signature
