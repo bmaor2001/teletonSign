@@ -8,7 +8,8 @@ class DataBase:
                 host = "localhost",
                 user = user,
                 password = password,
-                db = db
+                db = db,
+                autocommit=True
             )
             self.cursor = self.connection.cursor()
 
@@ -34,11 +35,11 @@ class DataBase:
             except Exception as e:
                 print(e)
                 
-    def insert_firma(self, Hash, Nomina): 
-            #Doc_signed = open(Doc_signed, "rb").read()
-            sql = """ INSERT INTO firmas  (Hash, Nomina) VALUES (%s,%s)"""
+    def insert_firma(self, Hash, Nomina, Doc_signed): 
+            Doc_signed = open(Doc_signed, "rb").read()
+            sql = """ INSERT INTO firmas  (Hash, Nomina, Doc_signed) VALUES (%s,%s,%s)"""
             try:
-                self.cursor.execute(sql, (Hash, Nomina))
+                self.cursor.execute(sql, (Hash, Nomina, Doc_signed))
                 print(f"{Hash} ha sido añadido a la base de datos.")
             except Exception as e:
                 print(e)
