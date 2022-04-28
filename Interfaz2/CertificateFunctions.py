@@ -58,7 +58,7 @@ def check_associate_cert_with_private_key(cert, private_key):
     :rtype: bool
     """
     try:
-        private_key_obj = OpenSSL.crypto.load_privatekey(OpenSSL.crypto.FILETYPE_PEM, open(private_key).read())
+        private_key_obj = OpenSSL.crypto.load_privatekey(OpenSSL.crypto.FILETYPE_PEM, private_key)
     except OpenSSL.crypto.Error:
         raise Exception('private key is not correct: %s' % private_key)
 
@@ -86,17 +86,15 @@ def Hash_document(file):
     # BUF_SIZE is totally arbitrary, change for your app!
     BUF_SIZE = 65536  # lets read stuff in 64kb chunks!
 
-    md5 = hashlib.md5()
     sha1 = hashlib.sha256()
     #hashlib.sha512
-
-    with open(file, 'rb') as f:
-        while True:
-            data = f.read(BUF_SIZE)
-            if not data:
-                break
-            md5.update(data)
-            sha1.update(data)
+    
+    while True:
+        data = file.read(BUF_SIZE)
+        if not data:
+            break
+        
+        sha1.update(data)
 
     #print("MD5: {0}".format(md5.hexdigest()))
     #print("SHA1: {0}".format(sha1.hexdigest()))
@@ -112,7 +110,7 @@ def VerificarVigencia(Certificado_1):
         cert_obj = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, Certificado_1)
         #cert_obj = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, open(cert).read())
     except OpenSSL.crypto.Error:
-        raise Exception('certificate is not correct: %s' % cert)
+        raise Exception('certificate is not correct')
 
     fecha = cert_obj.get_notAfter().decode()
     anio = int(fecha[:4])

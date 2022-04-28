@@ -19,7 +19,8 @@ def gen_signature(priv_key, document, nombreDoc, nomina,):
     This will be uploaded to the logs section FIRMAS'''
 
     #Read private_key from other file
-    with open(priv_key, "rb") as key_file:
+    open("temp.key", "wb").write(priv_key)
+    with open("temp.key", "rb") as key_file:
         private_key = serialization.load_pem_private_key(
             key_file.read(),
             password=None,
