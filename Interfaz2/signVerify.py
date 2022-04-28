@@ -67,7 +67,8 @@ def verify(cert, document, sigfile, load = True):
     if load:
         f = open(sigfile, 'rb')
         sigfile = f.read()
-        crtObj = crypto.load_certificate(crypto.FILETYPE_PEM, open(cert).read())
+        #crtObj = crypto.load_certificate(crypto.FILETYPE_PEM, open(cert).read())
+        crtObj = crypto.load_certificate(crypto.FILETYPE_PEM, cert)
     else:
         crtObj = crypto.load_certificate(crypto.FILETYPE_PEM, cert)
         
@@ -86,6 +87,7 @@ def verify(cert, document, sigfile, load = True):
         )
         return True
 
-    except: 
+    except Exception as e: 
+        print(e)
         return False
 

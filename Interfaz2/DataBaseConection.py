@@ -32,8 +32,11 @@ class DataBase:
             try:
                 self.cursor.execute(sql)
                 print(f"{Nombre} ha sido añadido a la base de datos.")
+                return True
             except Exception as e:
                 print(e)
+                print("aqui")
+                return False
                 
     ## Changes in these two functions
     '''
