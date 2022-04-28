@@ -16,8 +16,11 @@ class DataBase:
             print("Conexión exitosa")
         except:
             self.create(user, password, "teleton")
-            
-    
+
+    '''
+    def check4signature(nomina, hashDoc): #certificado):
+        sql = f"SELECT INTO firmas WHERE HASH =  VALUES ('{Hash}', '{Tipo}', '{Nombre}', '{Descripcion}', '{Tags}', '{Estatus}')"
+    '''
     def insert_users(self, nomina, password, nombre, puesto, tags, certificado, estatus):
             certificado = open(certificado, "rb").read()
             sql = """INSERT INTO users (`Nomina`,`Password`, `Nombre`, `Puesto`, `Tags`, `Certificado`, `Estatus`) VALUES (%s, %s,%s,%s,%s,%s,%s)"""

@@ -1,5 +1,4 @@
 from tkinter import *
-from OpenSSL import crypto  
 from tkinter import filedialog as fd
 from tkinter import messagebox as MessageBox
 from functools import partial
@@ -9,11 +8,11 @@ import os
 import DataBaseConection
 from CertificateFunctions import cert_gen, check_associate_cert_with_private_key, VerificarVigencia, Hash_document, VerificarPassword
 
-#os.chdir('./interfaz')
+os.chdir('./interfaz')
 
 purple_color = "#651e6e"
 user_ = "root"
-password_ = ""
+password_ = "root"
 db_ = "teleton"
 nomina = ""
 black_color = "#000000"
@@ -69,7 +68,7 @@ def main_window():
             print(nomina)
             main_to_options()
         else:
-            print("Contraseña no encontrada")
+            print("Contraseña o usuario incorrectos")
             MessageBox.showerror("Error", "La contraseña no coincide con el usuario")
         '''if username.get() == nomima and password.get() == pwd:
             main_to_options()
@@ -141,21 +140,45 @@ def options_window():
 # ventana para firma de documentos
 def sign_window():
     # funcion para seleccionar archivo a firmar
+    global nombrearch_to_sign, privateKey
+    nombrearch_to_sign = ''
+    privateKey = ''
+
     def select_file():
         global nombrearch_to_sign
-        nombrearch_to_sign=fd.askopenfilename(initialdir = "/",title = "Seleccione archivo",filetypes = (("pdf files","*.pdf"),("todos los archivos","*.*")))
-        print(nombrearch_to_sign)
+        nombrearch_to_sign=fd.askopenfilename(
+            initialdir = "/",
+            title = "Seleccione archivo",
+            filetypes = (("pdf files","*.pdf"),("todos los archivos","*.*")))
+
+    def check4signatures(database, doc, nomina):
+
+        signs = database.select(tabla = "firmas", 
+                        what = "Nomina", 
+                        where = "Hash", 
+                        value = nomina,
+                        where2= 'Hash',
+                        value2 = Hash_document(doc).hexdigest())
+
+        if len(signs) >= 2:
+            return True
+        else:
+            return False
+
     # funcion para seleccionar clave privada
     def select_privateKey():
         global privateKey
-        privateKey=fd.askopenfilename(initialdir = "/",title = "Seleccione archivo",filetypes = (("pdf files","*.pdf"),("todos los archivos","*.*")))
-        print(privateKey)
+        privateKey=fd.askopenfilename(
+            initialdir = "/",
+            title = "Seleccione archivo",
+            filetypes = (("pdf files","*.pdf"),("todos los archivos","*.*")))
+        
     # funcion para firmar archivo
     def sign_file():
         database = DataBaseConection.DataBase(user = user_, password = password_, db = db_)
-        file_1 = nombrearch_to_sign
+        nombrearch_to_verify = nombrearch_to_sign
         print(nomina)
-        Certificado_1 = database.select(tabla = "users", 
+        publicKey = database.select(tabla = "users", 
                         what = "Certificado", 
                         where = "Nomina", 
                         value = nomina)[0][0]
@@ -164,29 +187,41 @@ def sign_window():
         private_key_1 = privateKey
 
         #Se verifica la vigencia para saber si es posible firmar el documento
-        vg = VerificarVigencia(Certificado_1)
+        vg = VerificarVigencia(publicKey)
         if not vg:
             MessageBox.showerror("Error", "El certificado no es vigente.\nNo puede firmar")
             return
         
         #Se valida si la llave privada coincide con el certificado almacenado, es decir, que quien quiera firmar sea quien dice ser.
-        Match = check_associate_cert_with_private_key(Certificado_1, private_key_1)
+        Match = check_associate_cert_with_private_key(publicKey, private_key_1)
         print()
 
-        if Match:
-            # se generar el archivo de firma digital
-            file_name = signVerify.gen_signature(private_key_1, bytes(Hash_document(file_1).hexdigest(), 'utf-8'), file_1, nomina)
-            print(f"Archivo firmado en {file_name}")
-
-            print("\n Cargando la firma a la base de datos")
-            
-            database.insert_firma(Doc_signed = file_name,
-                             Hash = Hash_document(file_1).hexdigest(),
-                             Nomina = nomina)
-            MessageBox.showinfo("Éxito", f"Archivo firmado en {file_name}")
+        if check4signatures:
+            MessageBox.showinfo("Advertencia", "Ya firmó este documento.")
         else:
-            print("La llave privada no coincide con el certificado.\nNo puede firmar este documento.")
-            MessageBox.showerror("Error", "La llave privada no coincide con el certificado.\nNo puede firmar este documento.")
+            if Match:
+                # se generar el archivo de firma digital
+                file_name = signVerify.gen_signature(
+                    private_key_1, 
+                    bytes(Hash_document(nombrearch_to_verify).hexdigest(), 'utf-8'), 
+                    nombrearch_to_verify, 
+                    nomina)
+                if file_name == False:
+                    MessageBox.showerror("Error", "Ocurrió un error.\nAsegúrese que los documentos fueron ingresados correctamente")
+                else:
+                    print(f"Archivo firmado en {file_name}")
+                    print("\n Cargando la firma a la base de datos")
+                    database.insert_firma(
+                        Doc_signed = file_name,
+                        Hash = Hash_document(nombrearch_to_verify).hexdigest(),
+                        Nomina = nomina)
+                    MessageBox.showinfo("Éxito", f"Archivo firmado en {file_name}")
+            elif Match == False:
+                print("La llave privada no coincide con el certificado.\nNo puede firmar este documento.")
+                MessageBox.showerror("Error", "La llave privada no coincide con el certificado.\nNo puede firmar este documento.")
+            elif Match == None:
+                print("Ocurrió un error. Asegúrese que los documentos fueron ingresados correctamente.")
+                MessageBox.showerror("Error", "Ocurrió un error.\nAsegúrese que los documentos fueron ingresados correctamente.")
 
         sign_to_options()
 
@@ -194,41 +229,50 @@ def sign_window():
         '''Receives HASH od document and nomina. Checks and gets all active
         documents and checks hash received is in the db.
         -- Nomina always in UPPERCASE.'''
-
-        database = DataBaseConection.DataBase(user = user_, password = password_, db = db_)
-        documento = Hash_document(nombrearch_to_sign).hexdigest()
-
-        activeDocs = """ SELECT Tags FROM documentos WHERE (Estatus, Hash) = (%s, %s)"""
-        #print(activeDocs)
-        #activeDocs = str('SELECT Tags FROM documentos WHERE Estatus=Activo AND Hash=' + documento)
-
-        #Como le hago para checar si el documento está activo
-        #activeDocs = str('SELECT Nomina FROM firmas WHERE  ')
-        activeDocs = database.cursor.execute(activeDocs, ('Activo', documento))
-        activeDocs = database.cursor.fetchall()
-        len(activeDocs)
-        print(activeDocs[0][0].split(';'))
-        print(nomina)
-        print(nomina in activeDocs[0][0].split(';'))
-        if len(activeDocs) == 0:
-            print('El documento no se encuentra en la base de datos o no está activo.')
-            MessageBox.showerror("Error", 'El documento no se encuentra en la base de datos o no está activo.')
-            #return False
+        
+        if nombrearch_to_sign == '':
+            print('Please insert document')
+            MessageBox.showerror("Error", "Seleccione el documento a firmar.")
+        elif privateKey == '':
+            print('Please select private key to sign')
+            MessageBox.showerror("Error", "Seleccione su clave privada.")
         else:
-            if len(activeDocs) != 1:
-                print('Error: Hay más de un documento con este nombre, favor de reportarlo.')
-                #return False
-            else:
-                if nomina in activeDocs[0][0].split(';'):
-                    #Go to sign algorithm
-                    print('nomina in tags')
-                    sign_file()
-                    
-                else: 
-                    MessageBox.showerror("Error", 'No tiene autorización de firmar este documento.')
-                    print('No tiene autorización de firmar este documento.')
-                    #return False
+            #print(privateKey)
+            #print(nombrearch_to_sign)
+            database = DataBaseConection.DataBase(user = user_, password = password_, db = db_)
+            documento = Hash_document(nombrearch_to_sign).hexdigest()
 
+            activeDocs = """ SELECT Tags FROM documentos WHERE (Estatus, Hash) = (%s, %s)"""
+            #print(activeDocs)
+            #activeDocs = str('SELECT Tags FROM documentos WHERE Estatus=Activo AND Hash=' + documento)
+
+            #Como le hago para checar si el documento está activo
+            #activeDocs = str('SELECT Nomina FROM firmas WHERE  ')
+            activeDocs = database.cursor.execute(activeDocs, ('Activo', documento))
+            activeDocs = database.cursor.fetchall()
+            #len(activeDocs)
+            #print(activeDocs[0][0].split(';'))
+            #print(nomina)
+            #print(nomina in activeDocs[0][0].split(';'))
+            if len(activeDocs) == 0:
+                print('El documento no se encuentra en la base de datos o no está activo.')
+                MessageBox.showerror("Error", 'El documento no se encuentra en la base de datos o no está activo.')
+                
+            else:
+                if len(activeDocs) != 1:
+                    print('Error: Hay más de un documento con este nombre, favor de reportarlo.')
+                    MessageBox.showerror("Error", 'Error: Hay más de un documento con este nombre, favor de reportarlo.')
+                    
+                else:
+                    if nomina in activeDocs[0][0].split(';'):
+                        #Go to sign algorithm
+                        print('nomina in tags')
+                        sign_file()
+                        
+                    else: 
+                        MessageBox.showerror("Error", 'No tiene autorización de firmar este documento.')
+                        print('No tiene autorización de firmar este documento.')
+                        
     global sign
     sign = Toplevel(options)
     sign.title("Sign")
@@ -261,46 +305,55 @@ def sign_window():
 # funcion para verificar
 def verify_window():
     # funcion para seleccionar archivo a firmar
+    global nombrearch_to_verify
+    global publicKey #Certificado
+    nombrearch_to_verify = ''
+    publicKey = ''
+
     def select_file():
         global nombrearch_to_verify
         nombrearch_to_verify=fd.askopenfilename(initialdir = "/",title = "Seleccione archivo",filetypes = (("pdf files","*.pdf"),("todos los archivos","*.*")))
-        print(nombrearch_to_verify)
+        #print(nombrearch_to_verify)
     # funcion para seleccionar clave publica
     def select_publicKey():
         global publicKey
         publicKey=fd.askopenfilename(initialdir = "/",title = "Seleccione archivo",filetypes = (("pdf files","*.pdf"),("todos los archivos","*.*")))
-        print(publicKey)
+        #print(publicKey)
     # funcion para verificar archivo
     def verify_file():
         print("File Verified " + "publicKey: " + publicKey + " name: " + nombrearch_to_verify)
-        Certificado_1 = publicKey
-        file_1 = nombrearch_to_verify
-        database = DataBaseConection.DataBase(user = user_, password = password_, db = db_)
-        # Se extraé de la base de datos el archivo firmado que coincida con el hash del documento y la nómina
-        nomina_1 = crypto.load_certificate(crypto.FILETYPE_PEM, open(Certificado_1).read()).get_subject().commonName
-        f = database.select(tabla = "firmas", 
-                        what = "Doc_signed", 
-                        where = "Hash", 
-                        value = Hash_document(file_1).hexdigest(),
-                        where_2 = "Nomina",
-                        value_2 = nomina_1)#[0][0]
-        print(len(f))
-        print(f)
-        if len(f) != 1:
-            # Si el archivo aún no existe, tiene pendiente la firma
-            MessageBox.showerror("Error", f"El archivo aún no cuenta con la firma de {nomina}")
-            print(f"El archivo aún no cuenta con la firma de {nomina_1}")
-
+        if nombrearch_to_verify == '':
+            print('Please insert document')
+            MessageBox.showerror("Error", "Seleccione el documento a firmar.")
+        elif publicKey == '':
+            print('Please select private key to sign')
+            MessageBox.showerror("Error", "Seleccione su clave privada.")
         else:
-            # Si el archvio existe, se valida la firma
-            open("temp.sign", "wb").write(f[0][0])
-
-            result = signVerify.verify(Certificado_1, bytes(Hash_document(file_1).hexdigest(), 'utf-8'), "temp.sign", load = True)
-            if result:
-                MessageBox.showinfo("Verificación exitosa.", f"El archivo fue firmado correctamente por {nomina}")
+            database = DataBaseConection.DataBase(user = user_, password = password_, db = db_)
+            # Se extraé de la base de datos el archivo firmado que coincida con el hash del documento y la nómina
+            f = database.select(
+                tabla = "firmas", 
+                what = "Doc_signed", 
+                where = "Hash", 
+                value = Hash_document(nombrearch_to_verify).hexdigest(),
+                where_2 = "Nomina",
+                value_2 = nomina)#[0][0]
+            #print(len(f))
+            #print(f)
+            if len(f) != 1:
+                # Si el archivo aún no existe, tiene pendiente la firma
+                MessageBox.showerror("Error", f"El archivo aún no cuenta con la firma de {nomina}")
+                print(f"El archivo aún no cuenta con la firma de {nomina}")
             else:
-                MessageBox.showerror("Verificación errónea.", f"Verificación fallida. \nEl archivo no fue firmado por {nomina}")
-        verify_to_options()
+                # Si el archvio existe, se valida la firma
+                open("temp.sign", "wb").write(f[0][0])
+
+                result = signVerify.verify(publicKey, bytes(Hash_document(nombrearch_to_verify).hexdigest(), 'utf-8'), "temp.sign", load = True)
+                if result:
+                    MessageBox.showinfo("Verificación exitosa.", f"El archivo fue firmado correctamente por {nomina}")
+                else:
+                    MessageBox.showerror("Verificación errónea.", f"Verificación fallida. \nEl archivo no fue firmado por {nomina}. \n Asegúrese de que los documentos fueron ingresados correctamente.")
+            verify_to_options()
     
     global verify
     verify = Toplevel(options)
@@ -334,25 +387,33 @@ def verify_window():
 # funcion para solicitar firmas
 def request_signature_window():
     # funcion para seleccionar archivo
+    global nombrearch
+    nombrearch = ''
+
     def select_file():
         global nombrearch
         nombrearch=fd.askopenfilename(initialdir = "/",title = "Seleccione archivo",filetypes = (("pdf files","*.pdf"),("todos los archivos","*.*")))
-        print(nombrearch)
+        #print(nombrearch)
     # funcion para cargar informacion del archivo
     def nominas(tagNominas, typoDocument, description, tagsDocuments):
         #print("Las nominas son: " + tagNominas.get() + ", el typo es: " + typoDocument.get() + ", su descripcion es: " + description.get() + " y sus tags son: " + tagsDocuments.get() + " y la direccion del archivo es: " + nombrearch)
         
         database = DataBaseConection.DataBase(user = user_, password = password_, db = db_)
-        
-        database.insert_documentos(Hash = Hash_document(nombrearch).hexdigest(), 
-                           Tipo = typoDocument.get(), 
-                           Nombre = nombrearch, 
-                           Descripcion = description.get(),
-                           Tags = tagNominas.get(),
-                           Estatus = "Activo")
-        
-        MessageBox.showinfo("Éxito", f"El archivo ha sido cargado para ser firmado por {tagNominas.get()}")
-        request_signature_to_options()
+        #Campos obligatorios
+        if (tagNominas == '' or description == '' or nombrearch == ''):
+            MessageBox.showerror("Error", "Favor de llenar los campos de Descripción y Nóminas.")
+
+        else:
+            database.insert_documentos(
+                Hash = Hash_document(nombrearch).hexdigest(), 
+                Tipo = typoDocument.get(), 
+                Nombre = nombrearch, 
+                Descripcion = description.get(),
+                Tags = tagNominas.get(),
+                Estatus = "Activo")
+            
+            MessageBox.showinfo("Éxito", f"El archivo ha sido cargado para ser firmado por {tagNominas.get()}")
+            request_signature_to_options()
     
     global request_signature
     request_signature = Toplevel(options)
