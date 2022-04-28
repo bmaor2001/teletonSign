@@ -1,4 +1,5 @@
 from tkinter import *
+from OpenSSL import crypto  
 from tkinter import filedialog as fd
 from tkinter import messagebox as MessageBox
 from functools import partial
@@ -276,18 +277,19 @@ def verify_window():
         file_1 = nombrearch_to_verify
         database = DataBaseConection.DataBase(user = user_, password = password_, db = db_)
         # Se extraé de la base de datos el archivo firmado que coincida con el hash del documento y la nómina
+        nomina_1 = crypto.load_certificate(crypto.FILETYPE_PEM, open(Certificado_1).read()).get_subject().commonName
         f = database.select(tabla = "firmas", 
                         what = "Doc_signed", 
                         where = "Hash", 
                         value = Hash_document(file_1).hexdigest(),
                         where_2 = "Nomina",
-                        value_2 = nomina)#[0][0]
+                        value_2 = nomina_1)#[0][0]
         print(len(f))
         print(f)
         if len(f) != 1:
             # Si el archivo aún no existe, tiene pendiente la firma
             MessageBox.showerror("Error", f"El archivo aún no cuenta con la firma de {nomina}")
-            print(f"El archivo aún no cuenta con la firma de {nomina}")
+            print(f"El archivo aún no cuenta con la firma de {nomina_1}")
 
         else:
             # Si el archvio existe, se valida la firma
