@@ -1,3 +1,0 @@
-Login:
-* Validar que se ingrese un usuario y contraseña.
-* Si el usuario no se encuentra en la bd 
