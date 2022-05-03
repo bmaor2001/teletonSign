@@ -62,7 +62,7 @@ database.insert_users(nomina = nomina_1,
 
 Para verificar el correcto funcionamiento de la solución se instaló el paquete de MySQL que contiene el MySQL Server y MySQL Workbench, para después conectar la aplicación de MySQL Workbench con el servidor. Ahora se puede observar y administrar la base de datos de una manera más gráfica y cómoda para el usuario. 
 
-Para la comodidad de la fundación, se planea que se asigne un equipo de cómputo de escritorio como servidor que esté simpre encendido o, en su defecto, que se encuentre encendido durante las horas laborales. En esta máquina se encontrará la base de datos y la aplicación diseñada. La idea es que los empleados se conecten por Internet, desde su navegador ingresar la IP del equipo (servidor) siguido por dos puntos y el puerto de `streamlit` que es el 8501.
+Para la comodidad de la fundación, se planea que se asigne un equipo de cómputo de escritorio como servidor que esté simpre encendido o, en su defecto, que se encuentre encendido durante las horas laborales. En esta máquina se encontrará la base de datos y la aplicación diseñada. La idea es que los empleados se conecten por Internet, desde su navegador ingresar la IP del equipo (servidor) seguido por dos puntos y el puerto de `streamlit` que es el 8501.
 
 Para más información relacionada a ``streamlit`` favor de consultar su [documentación](https://docs.streamlit.io/library/advanced-features/configuration).
 
