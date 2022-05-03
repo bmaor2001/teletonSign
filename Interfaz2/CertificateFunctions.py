@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[ ]:
-
-
 from OpenSSL import crypto, SSL
 from datetime import datetime
 import OpenSSL.crypto 

@@ -1,0 +1,8 @@
+##Librerías a descargar
+streamlit
+pyOpenSSL
+datetime
+pymysql
+pandas
+numpy
+hashlib

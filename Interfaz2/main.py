@@ -17,7 +17,7 @@ from CertificateFunctions import cert_gen, check_associate_cert_with_private_key
 if 'permission' not in st.session_state:
     st.session_state.permission = False
 if 'database' not in st.session_state:
-    st.session_state.database = DataBaseConection.DataBase(user = "root", password = "", db = "teleton")
+    st.session_state.database = DataBaseConection.DataBase(user = "root", password = "root", db = "teleton")
 if 'nomina' not in st.session_state:
     st.session_state.nomina = ""
 

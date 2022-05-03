@@ -82,7 +82,7 @@ En caso de que existan problemas al momento de conectarse, favor de revisar la c
 
 | Funciones  |  Entradas  |  Salidas |  Descripción  |  
 |---|---|---|---|
-| __init__  | - Usuario de la base de datos. <br> - Contraseña <br> - Nombre de la base de datos| - Mensaje | Función de inicialización de la clase. Se conecta o crea la base de datos con los parámetros proporcionados |
+| __init__  | - Usuario de la base de datos. <br> - Contraseña <br> - Nombre de la base de datos| - Mensaje | Función de inicialización de la clase. Se conecta y, en caso de no encontrar la base de datos especificada, crea la base de datos con los parámetros proporcionados. |
 | insert_users  | - ID de la persona <br> - Constraseña creada por la persona <br> - Nombre completo de la persona <br> - Puesto de la persona <br> - Tags: información adicional de la persona <br> -Archivo certificado de la persona <br> - Estatus: Activo/Inactivo  |- Mensaje | Función para insertar usuarios nuevos a la base de datos en la tabla llamada 'users'. Debe ser manejada por administrador  |   
 |  insert_documentos | - Hash del documento a firmar <br> - Tipo de documento <br> - Nombre del archivo <br> - Descripción <br> - IDs de las personas que firmarán (puede ser más de una, separados por un punto-coma ';') <br> - Estatus: Activo/Inactivo  | - Mensaje  | Función para insertar documentos nuevos a la base de datos en la tabla llamada 'dcumentos'. Se manda a llamar por la aplicación cuando se selecciona la opción de 'Solicitar firma' |  
 | insert_firma  |  - Documento de firma de documento <br> - Hash del documento que se firmó <br> - ID de la persona que firma |  | Función que sube a la tabla 'firmas' el archivo con la firma digital para el documento identificado con su hash, quién lo firma y la fecha y hora de cuando esto ocurre. Se tiene la intención que esta tabla sirva como *logs* para saber y llevar un control de las firmas. <br> Esta función se llama cuando se escoge la opción de 'Firmar' en la aplicación. |   
@@ -132,4 +132,4 @@ Esta función se encuentra dentro de la función de main_window() y usa a la fun
 | nominas | - IDs de los empleados que se solicita que firmen <br> - Tipo de documento <br> - Descripción |  | Función que usa la función ```DataBase.insert_documentos()``` para cargar a la base de datos un nuevo documento con sus variables. |
 
 ## Ejemplo de aplicación
-Revisar el ejemplo del [archivo](ManualProgramador.ipynb)
+Revisar el ejemplo del [archivo](ejemploAplicado.ipynb).

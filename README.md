@@ -1,10 +1,19 @@
 # teletonSign
 
-Python --v 3.8.0 or above
+Este proyecto resuelve la problemática de firma digital presentada por Fundación Teletón.
 
-- Manually created in phpMySQL (we will add a code to create it in python)
-- Libraries used: pip install(pymysql, ecdsa, cryptography, datetime, ....)
-- Software: phpMySQL (for database), WampServer (run localhost)
+Para comnezar asegúrese de que cuenta con Python, en caso de no contar con éste, lo puede descargar desde el siguiente [link](https://www.python.org/downloads/).
 
+Antes de ejecutar la solución, deberá instalar las librerías utilizadas (éstas se encuentran en el archivo llamado [requirements.txt](requirements.txt)). Para esto, ubíquese en el directorio del proyecto y ejecute el siguiente comando:
 
-**Conect to db to call for signatures documents, names and related info. for code signVerify.py. prob change the rsa thing.
+```
+$ pip install -r requirements.txt 
+```
+
+El archivo principal es [main.py](./Interfaz2/main.py). El cual llamará a los demás archivos con las funciones que se usarán. Para poder ejecutar la solución, ubíquese dentro del directorio del proyecto y ejecute el siguiente comando:
+
+```
+$ streamlit run ./Interfaz2/main.py
+```
+
+Para saber más sobre el funcionamiento de la solución o sus funciones, lea el [Manual del Programador](manualProgramador.md).
