@@ -121,23 +121,5 @@ A continuación se presentan funciones de comandos típicos de una base de datos
 | gen_signature  |  - Clave privada de la persona que firma <br> - Hash del documento <br> - Nombre del documento a firmar <br> - ID de la persona que firma | - Archivo binario con la firma <br>  |  Esta función sirve para generar la firma del documento que se necesite. Se usa la función hash SHA-512. |   
 | verify  |  - Certificado <br> - Hash del documento que se quiera verificar <br> - Archivo binario que contiene la firma digital del documento <br> - ``` load = True``` (Saber si lo tiene que leer del disco)  |  - True/False | Esta función verifica si la firma ingresada corresponde a una firma para el documento ingresado. | 
 
-### Documento **`login.py`** 
-
-| Funciones  |  Entradas  |  Salidas |  Descripción  |  
-|---|---|---|---|
-| main_to_options <br> potions_to_main <br> options_to_sign <br> options_to_verify <br> options_to_request_signature <br> sign_to_options <br> verify_to_options <br> request_signature_to_options  |  |   |  Funciones que sirven para cerrar ventanas emergentes de la aplicación. Sirve para no cerrarlas manualmente. Se usan dentro del código de la interfaz.|   
-| main_window  |  |   | Función que contiene a la ventana principal de la aplicación (Ventana de ingreso a la plataforma). |  
-| validateLogin | - Nombre de usuario ingresado <br> - Contraseña ingresada| - Mensaje  |  Función que verifica si el usuario y la contraseña corresponden a algún usuario en la base de datos. <br> 
-Esta función se encuentra dentro de la función de main_window() y usa a la función VerificaPassword().| 
-| options_window  |  |  | Contiene el código de la ventana de la interfaz relacionada con las opciones de 'Solicitar firma', 'Firmar' y 'Verificar'. |
-| sign_window  |   | | Función que contiene lo relacionado a la opción de 'Firmar'. |
-| select_file <br> select_privateKey <br> select_publicKey |  | - Mensaje  |  Funciones que permiten seleccionar un archivo del dispositivo local. |   
-| sign_file |  | - Mensaje  | Función que toma la clave privada y el documento a firmar. Verifica si la clave privada corresponde al certificado del usuario conectado y verifica la vigencia de este certificado. Si no hubo error, se ejecuta la función ```signVerify.gen_signature()```. |  
-| check_permit |  | - Mensaje  |  Función que verifica si la persona que intenta firmmar tiene permiso para hacer; es decir, si su ID se encuentra en los *tags* de ese documento.| 
-| verify_window  |  |  | Función que contiene el código relacionado a la opción de 'Verificar'. |
-| verify_file  |   | | Función que toma el certificado (se extrae la clave pública), el archivo con la firma digital y el documento a verificar. Verifica si el archivo de la firma digital corresponde a el documento ingresado, se usa la función  ```signVerify.verify()```.|
-| request_signature_window |  |  |  Función que contiene el código relacionado a la opción de 'Solicitar firma'.| 
-| nominas | - IDs de los empleados que se solicita que firmen <br> - Tipo de documento <br> - Descripción |  | Función que usa la función ```DataBase.insert_documentos()``` para cargar a la base de datos un nuevo documento con sus variables. |
-
 ## Ejemplo de aplicación
 Revisar el ejemplo del [archivo](ejemploAplicado.ipynb).
