@@ -2,7 +2,7 @@
 
 Este documento tiene la finalidad de explicar el funcionamiento de los distintos paquetes de funciones que se crearon para llevar a cabo la solución de la problemática planteada por Fundación Teletón.
 
-El documento se dividirá en 4 apartados: una breve introducción y explicación de la solución general planteada, preparación del equipo, explicación de las funciones y un ejemplo del funcionamiento.
+El documento se dividirá en 6 apartados: Una breve introducción y explicación de la solución general planteada, estructura de la solución, estructura de la base de datos, preparación del equipo, explicación de las funciones y un ejemplo del funcionamiento.
 
 ## Explicación general de la solución planteada
 
@@ -58,11 +58,19 @@ database.insert_users(nomina = nomina_1,
                 estatus = "Activo")
 ```
 
+## Estructura de la solución
+
+![Estructura de la solución](.\Interfaz2\Capturas\DiagramaPrincipal.png)
+
+## Estructura de la base de datos
+
+![Estructura de la base de datos](.\Interfaz2\Capturas\strucDB.jpeg)
+
 ## Levantamiento del servidor 
 
 Para verificar el correcto funcionamiento de la solución se instaló el paquete de MySQL que contiene el MySQL Server y MySQL Workbench, para después conectar la aplicación de MySQL Workbench con el servidor. Ahora se puede observar y administrar la base de datos de una manera más gráfica y cómoda para el usuario. 
 
-Para la comodidad de la fundación, se planea que se asigne un equipo de cómputo de escritorio como servidor que esté simpre encendido o, en su defecto, que se encuentre encendido durante las horas laborales. En esta máquina se encontrará la base de datos y la aplicación diseñada. La idea es que los empleados se conecten por Internet, desde su navegador ingresar la IP del equipo (servidor) siguido por dos puntos y el puerto de `streamlit` que es el 8501.
+Para la comodidad de la fundación, se planea que se asigne un equipo de cómputo de escritorio (o algún servidor que maneje Teletón) como servidor que esté simpre encendido o, en su defecto, que se encuentre encendido durante las horas laborales. En esta máquina se encontrará la base de datos y la aplicación diseñada. La idea es que los empleados se conecten por Internet, desde su navegador ingresar la IP del equipo (servidor) siguido por dos puntos y el puerto de `streamlit` que es el 8501.
 
 Para más información relacionada a ``streamlit`` favor de consultar su [documentación](https://docs.streamlit.io/library/advanced-features/configuration).
 
