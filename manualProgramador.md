@@ -60,11 +60,11 @@ database.insert_users(nomina = nomina_1,
 
 ## Estructura de la solución
 
-![Estructura de la solución](.\Interfaz2\Capturas\DiagramaPrincipal.png)
+![Estructura de la solución](https://github.com/bmaor2001/teletonSign/blob/main/Interfaz2/Capturas/DiagramaPrincipal.png)
 
 ## Estructura de la base de datos
 
-![Estructura de la base de datos](.\Interfaz2\Capturas\strucDB.jpeg)
+![Estructura de la base de datos](https://github.com/bmaor2001/teletonSign/blob/main/Interfaz2/Capturas/strucDB.jpeg)
 
 ## Levantamiento del servidor 
 
